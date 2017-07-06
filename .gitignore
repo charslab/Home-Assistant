@@ -1,0 +1,7 @@
+__pycache__/
+.idea/
+tmp.mp3
+*.wav
+main.exe
+main.build/
+_snowboydetect.so

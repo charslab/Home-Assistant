@@ -1,0 +1,3 @@
+
+WIT_KEY = "XXXX"
+YANDEX_KEY = "XXXX"
