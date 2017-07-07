@@ -35,6 +35,7 @@ class AudioRecorder:
         self.RATE   = rate
         self.CHUNK_SIZE = chunk_size
         self.THRESHOLD  = threshold
+        self.SILENCE_TIMEOUT = 20
 
     def get_default_stream_in(self):
         return self.device.open(format=self.FORMAT, channels=1, rate=self.RATE,
@@ -58,6 +59,9 @@ class AudioRecorder:
 
         print("AudioRecorder::adjust_noise_level() Threshold set to {0}".format(self.THRESHOLD))
 
+    def set_silence_timeout(self, silence_timeout):
+        self.SILENCE_TIMEOUT = silence_timeout
+
     def is_silent(self, data):
         arr = array('h', data)
         return int(max(arr)) < self.THRESHOLD
@@ -66,7 +70,6 @@ class AudioRecorder:
 
         stream = self.get_default_stream_in()
 
-        silence_timeout = 20
         num_silence = 0
         phrase_started = False
         frames = []
@@ -92,7 +95,7 @@ class AudioRecorder:
                 if phrase_started is True:
                     num_silence += 1
 
-            if num_silence >= silence_timeout and phrase_started is True:
+            if num_silence >= self.SILENCE_TIMEOUT and phrase_started is True:
                 print('AudioRecord::record() Detected phrase end')
                 break
 
@@ -117,46 +120,52 @@ class AudioRecorder:
 
         print('AudioRecord::record() Recording finished')
 
-    def yield_audio_bytes(self, timeout=10):
-        stream = self.get_default_stream_in()
+    def audio_stream_generator(self, timeout=10):
 
-        frames = []
-        silence_timeout = 20
+        stream = self.get_default_stream_in()
+        time.sleep(0.5)  # Faster than waiting for activation sound
+
         num_silence = 0
         phrase_started = False
 
-        print('AudioRecord::yield_audio_byte() Starting recording')
+        seconds_per_buffer = self.CHUNK_SIZE / self.RATE
+        elapsed_time = 0
 
-        start_time = time.time()
-        while time.time() < start_time + timeout:
+        print('AudioRecord::record() Starting recording')
+
+        while elapsed_time < timeout:
             data = stream.read(self.CHUNK_SIZE)
+
+            if len(data) == 0:
+                break
+
+            if phrase_started is True:
+                yield data
 
             if not self.is_silent(data):
                 phrase_started = True
-                frames.append(data)
+                num_silence = 0
 
             else:
                 if phrase_started is True:
                     num_silence += 1
 
-            if num_silence >= silence_timeout and phrase_started is True:
-                print('AudioRecord::yield_audio_byte() Detected phrase end')
+            if num_silence >= self.SILENCE_TIMEOUT and phrase_started is True:
+                print('AudioRecord::record() Detected phrase end')
                 break
+
+            elapsed_time += seconds_per_buffer
 
         stream.stop_stream()
         stream.close()
 
-        yield b''.join(frames)
+        assistant.play_audio('resources/audio/hotword_detected.mp3', async=True)
 
     def record_and_stream(self, timeout=10):
-        frames = self.record(timeout) #TODO: Fix yield for speed
-
         wit_url = 'https://api.wit.ai/speech'
         headers = {'Authorization': 'Bearer ' + auth.WIT_KEY,
-                   'Content-Type': 'audio/raw; encoding=signed-integer; bits=16; rate=8000; endian=little' }
-                   # 'Transfer-Encoding': 'chunked'}
-        # r = requests.post(wit_url, headers=headers, data=self.yield_audio_bytes(timeout))
-        r = requests.post(wit_url, headers=headers, data=b''.join(frames))
+                   'Content-Type': 'audio/raw; encoding=signed-integer; bits=16; rate=8000; endian=little',
+                   'Transfer-Encoding': 'chunked'}
+        r = requests.post(wit_url, headers=headers, data=self.audio_stream_generator(timeout))
 
-        # print(r.text)
         return r.json()

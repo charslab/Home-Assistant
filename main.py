@@ -31,11 +31,11 @@ def assistant_callback():
     global recorder
 
     start_time = time.time()
-    recorder.record_to_file()
+    # recorder.record_to_file()
 
-    with open('recorded.wav', 'rb') as f:
-        resp = client.speech(f, None, {'Content-Type': 'audio/wav'})
-    # resp = recorder.record_and_stream()
+    # with open('recorded.wav', 'rb') as f:
+    #    resp = client.speech(f, None, {'Content-Type': 'audio/wav'})
+    resp = recorder.record_and_stream()
 
     pprint.pprint(resp)
     elapsed_time = time.time() - start_time
@@ -46,6 +46,8 @@ def assistant_callback():
 
 if __name__ == '__main__':
     recorder.adjust_noise_level()
+    recorder.set_silence_timeout(15)
+
     assistant.start(assistant_callback, hotword_sensivity=0.8)
 
     try:
@@ -54,32 +56,4 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         assistant.stop()
-
-    """resp = client.message('come si dice buonasera in inglese')
-    pprint.pprint(resp)
-
-    assistant.handle_response(resp)
-
-
-    print('Testing recording')
-
-    recorder = audiorecorder.AudioRecorder()
-    recorder.adjust_noise_level()
-
-    start_time = time.time()
-    assistant.handle_response(recorder.record_and_stream())
-    elapsed_time = time.time() - start_time
-    print("Took {0}".format(elapsed_time))
-
-
-    start_time = time.time()
-    recorder.record_to_file()
-
-    with open('recorded.wav', 'rb') as f:
-        resp = client.speech(f, None, {'Content-Type': 'audio/wav'})
-    assistant.handle_response(resp)
-
-    elapsed_time = time.time() - start_time
-    print("Response: " + str(resp))
-    print("Took {0}".format(elapsed_time))"""
 

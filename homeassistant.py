@@ -17,7 +17,7 @@
 
 import datetime
 import os
-import pprint
+import time
 import threading
 import snowboydecoder
 import translator
@@ -38,12 +38,6 @@ class HomeAssistant:
         self.running = True
         self.detector = None
         self.hotword_detected = False
-
-    def on_hotword_detected(self):
-        self.play_audio('resources/audio/hotword_detected.mp3', async=False)
-        self.hotword_detected = True
-        self.detector.terminate()
-        self.semaphore_assistant.release()
 
     def __play(self, cmd, audio_path, speech=False):
         if speech is True:
@@ -111,6 +105,12 @@ class HomeAssistant:
     def add_intent_callback(self, f):
         self.callbacks.setdefault(f.__name__, f)
 
+    def on_hotword_detected(self):
+        self.play_audio('resources/audio/hotword_detected.mp3', async=True)
+        self.hotword_detected = True
+        self.detector.terminate()
+        self.semaphore_assistant.release()
+
     def hotword_detector_thread(self, model, sensitivity):
         self.detector = snowboydecoder.HotwordDetector(decoder_model=model, sensitivity=sensitivity)
 
@@ -142,6 +142,7 @@ class HomeAssistant:
             if self.on_assistant_activated_callback is not None:
                 self.on_assistant_activated_callback()
 
+            self.hotword_detected = False
             self.semaphore_hotword.release()
 
     def start(self, on_assistant_activated_callback, hotword_model='resources/alexa.umdl', hotword_sensivity=0.5):
@@ -170,15 +171,12 @@ def intent(f):
 
 @intent
 def weather_forecast(self, entities):
-    date = None
     location = self.current_city
 
     if 'location' in entities:
         location = entities['location'][0]['value']
 
     forecast = weather.getForecast(location, "")
-
-    pprint.pprint(forecast)
 
     today = False
     if 'datetime' in entities:
