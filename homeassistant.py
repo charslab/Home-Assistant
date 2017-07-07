@@ -22,6 +22,8 @@ import snowboydecoder
 import translator
 import weather
 import geolocation
+import knowledge
+import pprint
 
 from gtts import gTTS
 
@@ -257,4 +259,32 @@ def phrase_translation(self, entities):
     translated_phrase = translator.translate(self.default_language, language, phrase)
 
     self.speak(translated_phrase, lang=language)
+
+
+@intent
+def latest_news(self, entities):
+    None
+
+
+@intent
+def search_query(self, entities):
+
+    if 'wikipedia_search_query' in entities:
+        query = entities['wikipedia_search_query'][0]['value']
+
+        try:
+            result = knowledge.wiki_search(query, self.default_language)
+            self.speak(result)
+
+        except Exception as e:
+            pprint.pprint(e)
+            # self.speak("Spiacente, non ho trovato risultati")
+
+            try:
+                result = knowledge.wolfram_search(query, self.default_language)
+                self.speak(result)
+
+            except Exception as e:
+                pprint.pprint(e)
+                self.speak("Spiacente, non ho trovato risultati")
 

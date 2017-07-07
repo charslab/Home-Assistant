@@ -1,3 +1,4 @@
 wit
 gtts
 pyaudio
+wolframalpha
