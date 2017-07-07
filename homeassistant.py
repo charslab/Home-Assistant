@@ -17,19 +17,23 @@
 
 import datetime
 import os
-import time
 import threading
 import snowboydecoder
 import translator
 import weather
+import geolocation
 
 from gtts import gTTS
 
 
 class HomeAssistant:
-    def __init__(self):
+    def __init__(self, default_language='en'):
+        self.default_language = default_language
         self.callbacks = {}
-        self.current_city = "Torino" #TODO: geolocation
+        self.current_city = geolocation.getCurrentCity(default_language)
+        if self.current_city is None:
+            self.current_city = "Torino"
+
         self.semaphore_speaking = threading.Semaphore(1)
         self.semaphore_hotword = threading.Semaphore(1)
         self.semaphore_assistant = threading.Semaphore(0)
@@ -57,9 +61,13 @@ class HomeAssistant:
         else:
             self.__play(cmd, audio_path)
 
-    def speak(self, string, async=False, lang='it'):
+    def speak(self, string, async=False, lang=None):
         print(string)
         file = 'tmp.mp3'
+
+        if lang is None:
+            lang = self.default_language
+
         tts = gTTS(text=string, lang=lang)
         tts.save(file)
 
@@ -162,7 +170,7 @@ class HomeAssistant:
         self.semaphore_hotword.release()
         self.detector.terminate()
 
-assistant = HomeAssistant()
+assistant = HomeAssistant('it')
 
 
 def intent(f):
@@ -243,10 +251,10 @@ def phrase_translation(self, entities):
     if language is None or phrase is None:
         return
 
-    language = translator.translate('en', language).lower().strip()[0:2]
+    language = translator.translate(self.default_language, 'en', language).lower().strip()[0:2]
 
     print("Translating to {0}".format(language))
-    translated_phrase = translator.translate(language, phrase)
+    translated_phrase = translator.translate(self.default_language, language, phrase)
 
     self.speak(translated_phrase, lang=language)
 

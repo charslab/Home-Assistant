@@ -34,10 +34,10 @@ def detect_language(text):
         return None
 
 
-def translate(target, text):
+def translate(source, target, text):
     global yandex_translate_url
 
-    lang = "it-" + target
+    lang = source + "-" + target
 
     r = requests.post(yandex_translate_url, data={'lang': lang,
                                                   'text': text})
