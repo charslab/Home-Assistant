@@ -77,7 +77,7 @@ class AudioRecorder:
         seconds_per_buffer = self.CHUNK_SIZE / self.RATE
         elapsed_time = 0
 
-        print('AudioRecord::record() Starting recording')
+        print('AudioRecorder::record() Starting recording')
 
         while elapsed_time < timeout:
             data = stream.read(self.CHUNK_SIZE)
@@ -96,7 +96,7 @@ class AudioRecorder:
                     num_silence += 1
 
             if num_silence >= self.SILENCE_TIMEOUT and phrase_started is True:
-                print('AudioRecord::record() Detected phrase end')
+                print('AudioRecorder::record() Detected phrase end')
                 break
 
             elapsed_time += seconds_per_buffer
@@ -118,7 +118,7 @@ class AudioRecorder:
         wf.writeframes(b''.join(frames))
         wf.close()
 
-        print('AudioRecord::record() Recording finished')
+        print('AudioRecorder::record() Recording finished')
 
     def audio_stream_generator(self, timeout=10):
 
@@ -131,7 +131,7 @@ class AudioRecorder:
         seconds_per_buffer = self.CHUNK_SIZE / self.RATE
         elapsed_time = 0
 
-        print('AudioRecord::record() Starting recording')
+        print('AudioRecorder::record() Starting recording')
 
         while elapsed_time < timeout:
             data = stream.read(self.CHUNK_SIZE)
@@ -151,7 +151,7 @@ class AudioRecorder:
                     num_silence += 1
 
             if num_silence >= self.SILENCE_TIMEOUT and phrase_started is True:
-                print('AudioRecord::record() Detected phrase end')
+                print('AudioRecorder::record() Detected phrase end')
                 break
 
             elapsed_time += seconds_per_buffer
