@@ -85,15 +85,15 @@ class AudioRecorder:
             if len(data) == 0:
                 break
 
-            if phrase_started is True:
-                frames.append(data)
-
             if not self.is_silent(data):
                 phrase_started = True
 
             else:
                 if phrase_started is True:
                     num_silence += 1
+
+            if phrase_started is True:
+                frames.append(data)
 
             if num_silence >= self.SILENCE_TIMEOUT and phrase_started is True:
                 print('AudioRecorder::record() Detected phrase end')
@@ -139,9 +139,6 @@ class AudioRecorder:
             if len(data) == 0:
                 break
 
-            if phrase_started is True:
-                yield data
-
             if not self.is_silent(data):
                 phrase_started = True
                 num_silence = 0
@@ -149,6 +146,9 @@ class AudioRecorder:
             else:
                 if phrase_started is True:
                     num_silence += 1
+
+            if phrase_started is True:
+                yield data
 
             if num_silence >= self.SILENCE_TIMEOUT and phrase_started is True:
                 print('AudioRecorder::record() Detected phrase end')
