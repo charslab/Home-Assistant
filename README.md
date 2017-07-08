@@ -36,7 +36,7 @@ def weather_forecast(self, entities):
   # handle weather forecast request
 ```
 
-See homeassistant.py for more examples.
+See [homeassistant.py](https://github.com/charslab/Home-Assistant/blob/master/homeassistant.py) for more examples.
 
 **Important:** a callback's name *must exactly match* its intent's name (set in wit.ai)
 
