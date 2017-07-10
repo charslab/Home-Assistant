@@ -20,6 +20,8 @@ import wave
 from array import array
 
 import pyaudio
+from pydub import AudioSegment
+
 import requests
 
 import auth
@@ -37,6 +39,13 @@ class AudioRecorder:
         self.THRESHOLD  = threshold
         self.SILENCE_TIMEOUT = 20
 
+        self.silence_sample = AudioSegment.empty()
+
+    def audio_segment_from_bytes(self, frames):
+        return AudioSegment(data=b''.join(frames),
+                            sample_width=2, frame_rate=self.RATE,
+                            channels=1)
+
     def get_default_stream_in(self):
         return self.device.open(format=self.FORMAT, channels=1, rate=self.RATE,
                                 input=True, output=False, frames_per_buffer=self.CHUNK_SIZE)
@@ -46,9 +55,11 @@ class AudioRecorder:
 
         stream = self.get_default_stream_in()
 
+        frames = []
         start_time = time.time()
         while time.time() < start_time + 2:
             data = stream.read(self.CHUNK_SIZE)
+            frames.append(data)
             arr = array('h', data)
 
             if max(arr) > self.THRESHOLD:
@@ -58,6 +69,10 @@ class AudioRecorder:
         stream.close()
 
         print("AudioRecorder::adjust_noise_level() Threshold set to {0}".format(self.THRESHOLD))
+
+        self.silence_sample = self.audio_segment_from_bytes(frames)
+        self.silence_sample = self.silence_sample.invert_phase()
+        print("AudioRecorder::adjust_noise_level() created noise sample")
 
     def set_silence_timeout(self, silence_timeout):
         self.SILENCE_TIMEOUT = silence_timeout
@@ -108,15 +123,22 @@ class AudioRecorder:
 
         return frames
 
-    def record_to_file(self, timeout=10, path='recorded.wav'):
+    def record_to_file(self, timeout=10, path='recorded.wav', noise_cancellation=False):
         frames = self.record(timeout)
 
-        wf = wave.open(path, 'wb')
-        wf.setnchannels(1)
-        wf.setsampwidth(self.device.get_sample_size(self.FORMAT))
-        wf.setframerate(self.RATE)
-        wf.writeframes(b''.join(frames))
-        wf.close()
+        if noise_cancellation is True:
+            speech = self.audio_segment_from_bytes(frames)
+            empty = AudioSegment.silent(duration=len(speech))
+            empty = empty.overlay(speech)
+            empty = empty.overlay(self.silence_sample, loop=True)
+            empty.export(path, format='wav')
+        else:
+            wf = wave.open(path, 'wb')
+            wf.setnchannels(1)
+            wf.setsampwidth(self.device.get_sample_size(self.FORMAT))
+            wf.setframerate(self.RATE)
+            wf.writeframes(b''.join(frames))
+            wf.close()
 
         print('AudioRecorder::record() Recording finished')
 
