@@ -62,7 +62,7 @@ Then run
 ## Contributing
 
 You are free to open pull requests, we'd appreciate it. 
-Make sure to follow the same coding convetions that we are using. 
+Make sure to follow the same coding conventions that we are using. 
 
 Things you may want to focus on in your contributions:
 - Better support for internationalization/localization
