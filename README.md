@@ -2,6 +2,8 @@
 
 # Home Assistant
 
+Home assistant inspired by Amazon Echo, based on wit.ai with speech/intent recognition
+
 ## Quickstart
 
 ### Setup
