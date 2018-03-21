@@ -16,6 +16,15 @@ Before you can get started you'll have to configure a few things.
 
       pip3 install -r requirements.txt
 
+- Install snowboy:
+    - You can download a binary distribution of (snowboy)[https://github.com/Kitt-AI/snowboy#precompiled-binaries-with-python-demo] (you'll only need \_snowboydetect.so, put in the the project's main folder), or
+    - Compile everything from scratch: just run 
+        
+        git submodule init
+        git submodule update
+        ./ubuntu_setup.sh
+
+
 - Create a new [Wit.ai](https://wit.ai) project. 
 - In **auth.py**:
     - Set **WIT_KEY** - with your Wit project key.

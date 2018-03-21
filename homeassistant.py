@@ -74,8 +74,8 @@ class HomeAssistant:
         tts.save(file)
 
         # cmd = "mplayer -quiet -really-quiet -speed 1.4 -af volume=10 -af ladspa=/usr/lib/ladspa/tap_pitch:tap_pitch:0:-33:-90:0"
-        cmd = "mplayer -quiet -really-quiet"
-        
+        cmd = "mplayer -quiet -really-quiet -speed 1.05"
+
         if async is True:
             thread = threading.Thread(target=self.__play, args=(cmd,),
                                       kwargs={'audio_path': file, 'speech': True})
