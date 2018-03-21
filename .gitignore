@@ -6,3 +6,4 @@ main.exe
 main.build/
 _snowboydetect.so
 swig-*
+auth.py
