@@ -2,3 +2,4 @@ wit
 gtts
 pyaudio
 wolframalpha
+pydub

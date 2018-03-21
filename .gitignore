@@ -5,3 +5,4 @@ tmp.mp3
 main.exe
 main.build/
 _snowboydetect.so
+swig-*
